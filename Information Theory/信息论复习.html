@@ -153,16 +153,21 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:30px 0}
 
   <!-- ============ 考试重点 ============ -->
   <div class="exam">
-    <h2>🎯 必考证明（老师点名 + 高频）</h2>
-    <div class="note">这四个证明是这两周的核心。务必能在白纸上独立默写，并讲清每一步用到的引理。</div>
+    <h2>🎯 考试重点对照表（按老师 revise 提纲）</h2>
+    <div class="note">老师明确：<b>基本概念不直接考证明</b>；要默写的证明只有 <span class="star">AEP</span> 和 <span class="star">噪声信道编码定理</span>。带 ★★★ 的是老师重点强调项。下表按老师的 8 个板块对应到讲义位置。</div>
     <ol>
-      <li><b>AEP & 典型集大小</b>（L4）— 大数定理 ⇒ $\frac1n\log\frac1{p(X^n)}\to H(X)$；并证 $(1-\epsilon)2^{n(H-\epsilon)}\le|A_\epsilon^{(n)}|\le 2^{n(H+\epsilon)}$。
-        <div class="flow">大数定理/切比雪夫 → AEP → 典型集概率≈1 → 典型集大小界 → 信源定长编码定理</div></li>
-      <li><b>噪声信道编码定理</b>（L11）— 正向 + 反向，<span class="star">最重</span>。
-        <div class="flow">正向：随机编码 + 联合典型译码 + Joint Typicality Lemma + Union bound&nbsp;&nbsp;|&nbsp;&nbsp;反向：DPI + Fano 不等式</div></li>
-      <li><b>Huffman 是最优前缀码</b>（L8）— 最优码树两条性质 + 扩展/融合的递归（$L_U^*=L_V^*+(p_{r-1}+p_r)$）。</li>
-      <li><b>变长编码定理 / 最优编码长度</b>（L7）— Kraft 不等式（充分性用二分分布构造树，必要性用完全二叉树叶子计数 / McMillan 用 $S^N$）；$H(X)\le L<H(X)+1$；拉格朗日得 $l^*=-\log_D p$。</li>
+      <li><b>① 不等式</b> — Jensen；数据处理不等式 DPI（马氏链）；Fano（特殊马氏链，引申 <b>Fisher 信息</b>）。<span class="tag">→ 模块一 §4 / 模块二 L9</span></li>
+      <li><b>② 长序列特性</b> — <span class="star">AEP（必默写证明）</span>、典型集、定长编码方案；<b>了解</b> SMB 定理 + 经验分布。<span class="tag">→ 模块二 L4</span>
+        <div class="flow">大数定理 → AEP → 典型集概率≈1 → 典型集大小界 → 定长编码定理</div></li>
+      <li><b>③ ★★★ 几何理解（老师重点）</b> — 传输极限 = <b>噪声球（打包）</b>；压缩极限 = <b>失真球（覆盖）</b>。<span class="tag">→ 模块三 §几何理解</span></li>
+      <li><b>④ 噪声信道编码定理</b> — <span class="star">正向 + 反向，证明过程务必掌握，最重</span>。
+        <div class="flow">正向：随机编码 + 联合典型译码 + Joint Typicality Lemma + Union bound&nbsp;&nbsp;|&nbsp;&nbsp;反向：DPI + Fano</div></li>
+      <li><b>⑤ 编码</b> — Kraft–McMillan；Huffman；最优前缀码性质 → Huffman 最优性；<span class="star">★★★ Hamming</span>（GF(2) 零空间 + 分组奇偶校验、检错/纠错、校验位如何分组）。<span class="tag">→ 模块二 L7/L8 + 模块三 L13</span></li>
+      <li><b>⑥ 率失真</b> — 两个假设、强典型集控制、覆盖引理；$R(D)=\min I$ 及其性质。<span class="tag">→ 模块三 L14</span></li>
+      <li><b>⑦ 马尔可夫性</b> — 状态转移矩阵/图；<b>稳态分布（特征值法）</b>、熵率计算；平稳遍历性（不可约 + 非周期 ⟹ 遍历）；指数族充分统计量判断。<span class="tag">→ 模块二 L6</span></li>
+      <li><b>⑧ 连续情况</b> — 微分熵；高斯（闭式、<b>微分熵只与协方差行列式有关</b>、最大熵、互信息与线性相关）；<b>水填充（要求计算）</b>。<span class="tag">→ 模块三 L12</span></li>
     </ol>
+    <div class="note" style="margin-top:10px">📌 必须能在白纸默写的两个证明：<b>AEP + 典型集大小界</b>、<b>噪声信道编码定理正反向</b>。其余证明（Huffman、变长、Kraft）理解思路即可，老师说基本概念不直接考证明。</div>
   </div>
 
   <!-- ============ 知识地图 ============ -->

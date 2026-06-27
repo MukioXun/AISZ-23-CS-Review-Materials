@@ -70,6 +70,7 @@ hr{border:none;border-top:1px dashed var(--line);margin:30px 0}
     <a href="#l12">L12 高斯/水填充</a>
     <a href="#l13">L13 Hamming</a>
     <a href="#l14">L14 率失真</a>
+    <a href="#geo" style="color:#ffd166">★★★ 几何理解</a>
     <a href="信息论复习.html">← 总览</a>
   </div>
 </div></header>
@@ -206,6 +207,24 @@ $$h(X)\le\tfrac12\log(2\pi e\,\sigma^2),\quad\text{高斯时取等}.$$
 这是高斯信道容量公式的根。证明用 $D(f\Vert\phi)\ge0$（$\phi$ 是高斯），跟模块一 Gibbs 同款套路。</p>
 </div>
 
+<div class="box key">
+<span class="label">★ 多维高斯：微分熵只与协方差行列式有关（老师点名）</span>
+<p style="margin-top:0">$n$ 维高斯 $\mathbf X\sim\mathcal N(\boldsymbol\mu,K)$（$K$ 是协方差矩阵）：
+$$h(\mathbf X)=\tfrac12\log\big((2\pi e)^n\,|K|\big).$$</p>
+<ul style="margin:6px 0 0">
+<li><strong>只依赖 $|K|=\det K$</strong>：与均值 $\boldsymbol\mu$ 无关（平移不改变熵）；相关结构只通过行列式起作用。</li>
+<li><strong>各分量独立时</strong> $K$ 是对角阵，$|K|=\prod\sigma_i^2$，熵 = 各分量熵之和。</li>
+<li><strong>相关会减熵</strong>：变量越相关，$|K|$ 越小（趋于退化），$h$ 越小——相关性"压缩"了体积。这呼应几何理解里"熵 = 体积对数"。</li>
+</ul>
+</div>
+
+<div class="box key">
+<span class="label">★ 互信息与线性相关性（高斯情形）</span>
+<p style="margin:0">联合高斯 $(X,Y)$，相关系数 $\rho$：
+$$I(X;Y)=-\tfrac12\log(1-\rho^2).$$
+$\rho=0$（不相关）→ $I=0$（高斯下不相关 = 独立）；$|\rho|\to1$（强线性相关）→ $I\to\infty$。<strong>所以对高斯变量，互信息直接度量"线性相关"的强弱。</strong> 注意这是高斯专属——一般分布里"不相关"不等于"独立"，互信息也不只看线性相关。</p>
+</div>
+
 <h3>12.2 高斯信道容量</h3>
 <div class="box key">
 <span class="label">公式（必背）</span>
@@ -224,27 +243,79 @@ $$\boxed{\,C=\tfrac12\log\Big(1+\dfrac{P}{\sigma^2}\Big)\,}\quad\text{bit/次使
 <div class="formula">$$ P_i=\big(\nu-\sigma_i^2\big)^+=\max\{\nu-\sigma_i^2,\ 0\},\qquad \sum_i P_i=P $$</div>
 <p style="margin-bottom:0">$\nu$（水位）由总功率约束定出。$\sigma_i^2\ge\nu$ 的子信道分到 0 功率。由 $I$ 的凹性 + KKT 条件推出。考试常给几个 $\sigma_i^2$ 让你解水位、分功率、算总容量。</p>
 </div>
+<div class="box ex">
+<span class="label">完整算一遍（老师要求会计算）</span>
+<p style="margin-top:0">3 个并行子信道，噪声 $\sigma^2=(1,\,2,\,3)$，总功率 $P=2$。求各 $P_i$ 与总容量。</p>
+<div class="step">
+<p style="margin-top:0"><strong>① 先假设全用上</strong>（水位淹没所有信道）：$\sum_i(\nu-\sigma_i^2)=P\Rightarrow3\nu-(1+2+3)=2\Rightarrow\nu=\tfrac83\approx2.67$。<br>
+<strong>② 检查</strong>：$\nu=2.67<\sigma_3^2=3$ → 第 3 个信道水位不够，$P_3=0$，<strong>把它剔除重算</strong>。</p>
+<p><strong>③ 只用前两个</strong>：$2\nu-(1+2)=2\Rightarrow\nu=2.5$。检查 $\nu=2.5>\sigma_2^2=2$ ✓，两个都成立。</p>
+<p style="margin-bottom:0"><strong>④ 分功率</strong>：$P_1=2.5-1=1.5$，$P_2=2.5-2=0.5$，$P_3=0$（和为 2 ✓）。<br>
+<strong>⑤ 总容量</strong>：$C=\sum_i\frac12\log\big(1+\frac{P_i}{\sigma_i^2}\big)=\frac12\log(1+1.5)+\frac12\log(1+0.25)=\frac12\log2.5+\frac12\log1.25\approx0.661+0.161=0.822$ bit。</p>
+</div>
+<p style="margin-bottom:0" class="tip"><strong>解题套路：假设全用 → 解水位 → 检查有没有信道低于水位 → 有就剔除重解 → 直到全部满足 → 分功率算容量。</strong> 这是水填充计算题的标准流程。</p>
+</div>
 
 <!-- ============= L13 ============= -->
-<h2 id="l13">L13　Hamming 码与 Viterbi 译码 <span class="tag">概念 + 计算</span></h2>
-<p class="lead">关键词：线性分组码、校验矩阵、最小距离、网格译码</p>
+<h2 id="l13">L13　Hamming 码 <span class="must">★★★ 老师重点</span></h2>
+<p class="lead">关键词：GF(2) 零空间、分组奇偶校验、校正子定位、检错/纠错</p>
 
 <div class="box intuition">
 <span class="label">从"存在好码"到"造一个看得见的码"</span>
-<p style="margin:0">L11 证明了好码<strong>存在</strong>，但那是随机码、不实用。L13 给出真能写出来的具体码——Hamming 码就是经典例子，能纠 1 个错。</p>
+<p style="margin:0">L11 证明了好码<strong>存在</strong>，但那是随机码、不实用。Hamming 码是真能写出来、能<strong>纠 1 个错</strong>的经典码。老师把它列为 ★★★，要求会：① GF(2) 零空间原理；② 分组奇偶校验怎么实现；③ 校验位如何分组；④ 如何检错/纠错。下面逐条讲透。</p>
 </div>
+
+<h3>13.1 原理一：GF(2) 零空间</h3>
 <div class="box key">
-<span class="label">线性分组码要点</span>
+<span class="label">线性码 = 校验矩阵的零空间</span>
 <ul style="margin:6px 0 0">
-<li><strong>GF(2) 运算</strong>：模 2 加法（异或），$1+1=0$。</li>
-<li><strong>生成矩阵 $G$</strong>：码字 $c=mG$（$m$ 是信息位）。<strong>校验矩阵 $H$</strong>：合法码字满足 $Hc^{\mathsf T}=0$（码 = $H$ 的零空间）。</li>
-<li><strong>最小距离 $d_{\min}$</strong>：任意两码字最少差几位。能<strong>纠</strong> $\lfloor(d_{\min}-1)/2\rfloor$ 个错、能<strong>检</strong> $d_{\min}-1$ 个错。</li>
-<li><strong>Hamming(7,4)</strong>：7 位码携带 4 位信息，$d_{\min}=3$，纠 1 错。<strong>校正子（syndrome）</strong> $s=Hr^{\mathsf T}$ 直接指出错在哪一位。</li>
+<li><strong>GF(2) 运算</strong>：只有 0、1，加法 = 异或（$1+1=0$），乘法 = 与。所有运算<strong>模 2</strong>。</li>
+<li><strong>校验矩阵 $H$</strong>：定义"合法码字"为满足 $H\mathbf c^{\mathsf T}=\mathbf 0$ 的所有向量 $\mathbf c$。<strong>即：码 = $H$ 的零空间（null space）。</strong> 每一行 $H$ 就是一个"奇偶校验方程"，要求某些位异或起来 = 0。</li>
+<li><strong>为什么零空间是好码</strong>：零空间对加法封闭（两码字之和仍是码字）→ 这是<strong>线性码</strong>；最小距离 = 最轻非零码字的重量。</li>
 </ul>
 </div>
+
+<h3>13.2 原理二：分组奇偶校验（Hamming(7,4) 实现）</h3>
 <div class="box key">
-<span class="label">Viterbi 译码（卷积码）</span>
-<p style="margin:0">在<strong>网格图（trellis）</strong>上找一条与接收序列"距离最近"的路径，用动态规划逐级保留各状态的最优幸存路径。本质是最大似然译码的高效实现。考试一般考概念 + 小规模网格手动走一遍。</p>
+<span class="label">7 位里，哪些是校验位、怎么分组</span>
+<p style="margin-top:0">7 个位置编号 1..7。<strong>校验位放在 2 的幂位置：位 1、2、4；数据位放其余：位 3、5、6、7</strong>（共 4 个数据位 → 故称 (7,4)）。</p>
+<p><strong>分组规则（关键）：每个校验位负责"位置编号的二进制里含它那一位"的所有位置。</strong> 把位置号写成 3 位二进制 $(b_4b_2b_1)$：</p>
+<table>
+<tr><th>校验位</th><th>负责（异或为 0）的位置</th><th>规则</th></tr>
+<tr><td>$p_1$（位1）</td><td>1, 3, 5, 7</td><td>二进制最低位 $b_1=1$</td></tr>
+<tr><td>$p_2$（位2）</td><td>2, 3, 6, 7</td><td>中间位 $b_2=1$</td></tr>
+<tr><td>$p_4$（位4）</td><td>4, 5, 6, 7</td><td>最高位 $b_4=1$</td></tr>
+</table>
+<p style="margin-bottom:0">编码时令每组异或为 0，即定出校验位的值：$p_1=d_3\oplus d_5\oplus d_7$，$p_2=d_3\oplus d_6\oplus d_7$，$p_4=d_5\oplus d_6\oplus d_7$。<strong>对应的校验矩阵 $H$ 的第 $j$ 列就是"位置号 $j$ 的二进制"</strong>，所以 $H$ 的列恰好是 $001,010,\dots,111$ 全部 7 个非零 3-bit 模式。</p>
+</div>
+
+<h3>13.3 如何检错 / 纠错（校正子 = 出错位置）</h3>
+<div class="box key">
+<span class="label">校正子 syndrome 直接报出错位</span>
+<p style="margin-top:0">收到 $\mathbf r$，算<strong>校正子</strong> $\mathbf s=H\mathbf r^{\mathsf T}$（模 2），读成二进制数 $(s_4 s_2 s_1)$：</p>
+<ul style="margin:6px 0 0">
+<li>$\mathbf s=\mathbf 0$ → <strong>没有错</strong>（或错得太多超出能力）。</li>
+<li>$\mathbf s\ne\mathbf 0$ → <strong>把 $\mathbf s$ 当二进制数读，它正好等于出错位的位置编号</strong>！翻转那一位即纠正。</li>
+</ul>
+<p style="margin-bottom:0"><strong>为什么这么神</strong>：单个位置 $j$ 出错，$\mathbf r=\mathbf c\oplus\mathbf e_j$，则 $\mathbf s=H\mathbf r^{\mathsf T}=H\mathbf c^{\mathsf T}\oplus H\mathbf e_j^{\mathsf T}=\mathbf 0\oplus(H\text{ 的第 }j\text{ 列})=$ 位置 $j$ 的二进制。所以校正子直接"指认"出错位——这就是把校验位放在 2 的幂位置的妙处。</p>
+</div>
+<div class="box ex">
+<span class="label">手算一遍</span>
+<p style="margin:0">设收到 $\mathbf r=(r_1\dots r_7)$，算三个校验：$s_1=r_1\oplus r_3\oplus r_5\oplus r_7$，$s_2=r_2\oplus r_3\oplus r_6\oplus r_7$，$s_4=r_4\oplus r_5\oplus r_6\oplus r_7$。<br>
+若得 $(s_4 s_2 s_1)=(1,0,1)=\text{二进制 }101=5$ → <strong>第 5 位出错，翻转 $r_5$ 即纠正</strong>。若 $(s_4s_2s_1)=000$ → 无错。</p>
+</div>
+
+<h3>13.4 检错 / 纠错能力</h3>
+<div class="box key">
+<span class="label">由最小距离决定</span>
+<p style="margin:0"><strong>最小距离 $d_{\min}=3$</strong>（任意两个 Hamming 码字至少差 3 位）。一般结论：
+$$\text{能纠 }\Big\lfloor\tfrac{d_{\min}-1}{2}\Big\rfloor\text{ 个错},\qquad\text{能检 }d_{\min}-1\text{ 个错}.$$
+Hamming(7,4)：纠 $\lfloor2/2\rfloor=1$ 个、检 $2$ 个。<strong>纠错和检错不可同时用满</strong>：要纠 1 个错就只剩检 1 个（再多会误纠）。</p>
+</div>
+
+<div class="box ex">
+<span class="label">Viterbi 译码（了解即可）</span>
+<p style="margin:0">用于卷积码：在<strong>网格图 trellis</strong> 上用动态规划，找一条与接收序列"汉明距离最近"的路径（最大似然译码的高效实现）。逐级保留各状态的幸存路径。考试若考，是小规模网格手动走一遍。</p>
 </div>
 
 <!-- ============= L14 ============= -->
@@ -269,6 +340,91 @@ $$\boxed{\,C=\tfrac12\log\Big(1+\dfrac{P}{\sigma^2}\Big)\,}\quad\text{bit/次使
 <p style="margin-bottom:0" class="tip">注意二元的 $R(D)=1-H(D)$ 与 BSC 容量 $C=1-H(p)$ 形状一样——又是对偶。</p>
 </div>
 
+<h3>14.1 可达性证明：两个假设 + 强典型集 + 覆盖引理</h3>
+<div class="box key">
+<span class="label">两个假设（证明的前提）</span>
+<ul style="margin:6px 0 0">
+<li><strong>假设 1：测试信道 $p(\hat v\mid v)$ 取达到 $R(D)$ 的最优者</strong>，由它定出重建分布的边缘 $q(\hat v)=\sum_v p(v)p(\hat v\mid v)$，并满足平均失真 $\mathbb E[d(V,\hat V)]\le D$。</li>
+<li><strong>假设 2：随机码本按这个边缘 $q(\hat v)$ 独立生成</strong> $2^{nR}$ 个重建序列 $\hat V^n$。（与信道定理"随机造码"同源的手法。）</li>
+</ul>
+<p style="margin-bottom:0" class="tip">若你们讲义对"两个假设"另有具体措辞，以讲义为准；核心思想就是这两条：用最优测试信道定边缘、按边缘随机造码。</p>
+</div>
+
+<div class="box key">
+<span class="label">强典型集：为什么需要"强"</span>
+<p style="margin:0">这里必须用<strong>强典型集</strong>（控制每个符号对 $(a,b)$ 的<strong>经验频率</strong>接近真实联合分布 $p(v,\hat v)$），而不能只用弱典型集。<strong>原因：失真是 $\frac1n\sum_i d(v_i,\hat v_i)$，它等于"在经验分布下对 $d$ 求期望"。只有强典型（经验分布≈真实分布）才能保证这个平均失真 $\approx\mathbb E[d(V,\hat V)]\le D$。</strong> 弱典型只管联合概率的对数，管不住失真，所以不够用。</p>
+</div>
+
+<div class="box proof">
+<span class="label">覆盖引理（Covering Lemma）—— 率失真的"命根子"，对偶于信道的联合典型引理</span>
+<p style="margin-top:0"><strong>陈述（直觉版）：</strong>从 $q(\hat v)$ 独立抽 $2^{nR}$ 个码字。对一个典型源序列 $V^n$，"<strong>至少有一个</strong>码字与它强联合典型"的概率 → 1，<strong>只要</strong>
+$$R> I(V;\hat V)+\delta.$$</p>
+<p style="margin-bottom:0"><strong>大白话：码字够多（$R>I$）时，每个源序列几乎一定被某个失真球盖住。</strong> 这正是几何理解里"覆盖"的严格版。对照信道定理：那里用联合典型引理证"错误码字<strong>不会</strong>冒充"（packing，怕重叠 → 给上界 $R<I$）；这里用覆盖引理证"<strong>总有</strong>码字盖住"（covering，怕漏 → 给下界 $R>I$）。<strong>一个怕重叠、一个怕漏，一对一地对偶。</strong></p>
+</div>
+
+<h3>14.2 率失真函数的性质</h3>
+<div class="box key">
+<span class="label">务必记住这几条</span>
+<ul style="margin:6px 0 0">
+<li><strong>非增</strong>：$R(D)$ 关于 $D$ 单调不增（容忍越大失真，需要的码率越少）。</li>
+<li><strong>凸</strong>：$R(D)$ 是 $D$ 的凸函数（来自 $I$ 对测试信道的凸性）→ 保证 $\min$ 有唯一解、可用 KKT。</li>
+<li><strong>端点</strong>：$R(0)=H(V)$（无失真 = 无损压缩，回到熵）；$R(D_{\max})=0$（失真够大就啥都不用传，$D_{\max}=\min_{\hat v}\mathbb E[d(V,\hat v)]$）。</li>
+</ul>
+</div>
+
+<hr>
+<!-- ============= 几何理解 ============= -->
+<h2 id="geo">★★★ 几何理解：噪声球与失真球 <span class="tag">老师重点强调</span></h2>
+<p class="lead">关键词：把 $2^{nH}$ 当"体积"、容量 = 打包、率失真 = 覆盖</p>
+
+<div class="box intuition">
+<span class="label">一句话总纲：高维空间里，熵就是"体积的指数"</span>
+<p style="margin:0">长度 $n$ 的典型序列，每条概率都≈ $2^{-nH}$，共约 $2^{nH}$ 条。<strong>把"$2^{nH}$ 条典型序列"想象成一块体积为 $2^{nH}$ 的"空间"。</strong> 于是两个最重的定理都变成中学几何题：<strong>容量 = 往大空间里塞小球（打包），率失真 = 用小球盖住整个空间（覆盖）。</strong> 这就是老师强调的几何图像。</p>
+</div>
+
+<h3>传输极限 = 噪声球（打包 packing）</h3>
+<div class="box key">
+<span class="label">信道容量的几何推导</span>
+<div class="step">
+<p style="margin-top:0"><strong>① 每个码字撑开一个"噪声球"。</strong> 发送 $x^n$，信道噪声把它扩散成一团可能的输出：给定 $x^n$，典型的 $y^n$ 约有 $2^{nH(Y\mid X)}$ 个。这团 $y^n$ 就是以 $x^n$ 为中心的<strong>噪声球，体积 $2^{nH(Y\mid X)}$</strong>。</p>
+<p><strong>② 输出空间总体积。</strong> 所有典型 $y^n$ 共约 $2^{nH(Y)}$ 个 → 大空间总体积 $2^{nH(Y)}$。</p>
+<p><strong>③ 可靠解码 = 噪声球互不重叠。</strong> 若两个码字的噪声球重叠，收到落在重叠区的 $y^n$ 就分不清是谁发的。所以最多能塞下的码字数 =
+$$\frac{\text{总体积}}{\text{单球体积}}=\frac{2^{nH(Y)}}{2^{nH(Y\mid X)}}=2^{n(H(Y)-H(Y\mid X))}=2^{nI(X;Y)}.$$</p>
+<p style="margin-bottom:0"><strong>④ 取最优输入分布</strong> → 至多 $2^{nC}$ 个码字 → 速率 $R\le C$。<strong>容量就是"最多能不重叠地打包多少个噪声球"。</strong></p>
+</div>
+</div>
+<div class="box ex">
+<span class="label">高斯版（欧氏球，最直观）</span>
+<p style="margin:0">$Y^n=X^n+Z^n$。噪声 $Z^n$ 让接收点落在以 $X^n$ 为心、半径 $\sqrt{n\sigma^2}$ 的<strong>欧氏球</strong>里；所有接收点落在半径 $\sqrt{n(P+\sigma^2)}$ 的大球内。$n$ 维球体积 $\propto r^n$，故能塞下的小球数
+$$\approx\frac{\big(\sqrt{n(P+\sigma^2)}\big)^n}{\big(\sqrt{n\sigma^2}\big)^n}=\Big(1+\frac{P}{\sigma^2}\Big)^{n/2}=2^{\frac n2\log(1+P/\sigma^2)}=2^{nC}.$$
+<strong>球填充直接"数"出了 $C=\frac12\log(1+P/\sigma^2)$。</strong> 这是老师说"噪声球"的精确含义。</p>
+</div>
+
+<h3>压缩极限 = 失真球（覆盖 covering）</h3>
+<div class="box key">
+<span class="label">率失真的几何推导</span>
+<div class="step">
+<p style="margin-top:0"><strong>① 每个重建码字盖住一个"失真球"。</strong> 一个重建序列 $\hat v^n$ 能代表所有与它失真 $\le D$ 的源序列；这些源序列约有 $2^{nH(V\mid\hat V)}$ 个 → 以 $\hat v^n$ 为心的<strong>失真球，体积 $2^{nH(V\mid\hat V)}$</strong>。</p>
+<p><strong>② 源空间总体积。</strong> 典型源序列共约 $2^{nH(V)}$ 个。</p>
+<p><strong>③ 不失真地压缩 = 失真球盖满整个源空间。</strong> 每个源序列都得被某个码字的失真球覆盖（否则它无法被低失真地表示）。所以最少需要的码字数 =
+$$\frac{\text{总体积}}{\text{单球体积}}=\frac{2^{nH(V)}}{2^{nH(V\mid\hat V)}}=2^{nI(V;\hat V)}.$$</p>
+<p style="margin-bottom:0"><strong>④ 取最优</strong> → 至少 $2^{nR(D)}$ 个码字 → 速率 $R\ge R(D)$。<strong>率失真就是"最少用多少失真球能盖满源空间"。</strong></p>
+</div>
+</div>
+
+<div class="box warn">
+<span class="label">★ 对偶之美（一张表记住全部）</span>
+<table style="margin-top:6px">
+<tr><th></th><th>信道容量 $C$（传输）</th><th>率失真 $R(D)$（压缩）</th></tr>
+<tr><td>几何动作</td><td>噪声球 <strong>打包 packing</strong></td><td>失真球 <strong>覆盖 covering</strong></td></tr>
+<tr><td>球的要求</td><td>互<strong>不重叠</strong>（不混淆）</td><td><strong>铺满</strong>不留缝（不漏）</td></tr>
+<tr><td>球的体积</td><td>$2^{nH(Y\mid X)}$</td><td>$2^{nH(V\mid\hat V)}$</td></tr>
+<tr><td>码字数</td><td><strong>最多</strong> $2^{nI}$</td><td><strong>最少</strong> $2^{nI}$</td></tr>
+<tr><td>优化方向</td><td>$\max I(X;Y)$</td><td>$\min I(V;\hat V)$</td></tr>
+</table>
+<p style="margin-bottom:0">一个求"最多塞几个"（max），一个求"最少要几个"（min）；一个怕重叠、一个怕漏。<strong>这正是 $C=\max I$ 与 $R(D)=\min I$ 一max一min 的几何根源。</strong> 老师把它列为 ★★★，答题时画两张球图 + 这张对偶表，就是满分思路。</p>
+</div>
+
 <hr>
 <!-- ============= cheat ============= -->
 <h2 id="cheat">速查 + 自测 <span class="tag">考前 5 分钟</span></h2>
@@ -286,8 +442,13 @@ $$\boxed{\,C=\tfrac12\log\Big(1+\dfrac{P}{\sigma^2}\Big)\,}\quad\text{bit/次使
 <tr><td>高斯容量</td><td>$C=\frac12\log(1+P/\sigma^2)$</td></tr>
 <tr><td>高斯最大熵</td><td>$h\le\frac12\log(2\pi e\sigma^2)$</td></tr>
 <tr><td>注水</td><td>$P_i=(\nu-\sigma_i^2)^+$，$\sum P_i=P$</td></tr>
-<tr><td>Hamming(7,4)</td><td>$d_{\min}=3$，纠 1 错，校正子定位</td></tr>
+<tr><td>Hamming(7,4)</td><td>$d_{\min}=3$，纠 1 错，校正子 = 出错位置编号</td></tr>
+<tr><td>Hamming 分组</td><td>校验位在 2 的幂位(1,2,4)；$p_k$ 管"位置号二进制含该位"的位</td></tr>
 <tr><td>率失真</td><td>$R(D)=\min I(V;\hat V)$；高斯 $\frac12\log\frac{\sigma^2}{D}$</td></tr>
+<tr><td>覆盖引理</td><td>$R>I(V;\hat V)$ ⟹ 失真球盖满源空间（对偶联合典型引理）</td></tr>
+<tr><td>★★★ 几何</td><td>容量=噪声球<b>打包</b>(不重叠,max)；率失真=失真球<b>覆盖</b>(不漏,min)</td></tr>
+<tr><td>多维高斯熵</td><td>$h=\frac12\log((2\pi e)^n|K|)$，只看 $\det K$</td></tr>
+<tr><td>高斯互信息</td><td>$I(X;Y)=-\frac12\log(1-\rho^2)$，度量线性相关</td></tr>
 </table>
 </div>
 
@@ -306,6 +467,18 @@ $$\boxed{\,C=\tfrac12\log\Big(1+\dfrac{P}{\sigma^2}\Big)\,}\quad\text{bit/次使
 <div class="qa">
 <p class="q">自测 4：注水时什么样的子信道不分配功率？</p>
 <p class="muted">答：噪声 $\sigma_i^2\ge\nu$（水位）的子信道，$P_i=(\nu-\sigma_i^2)^+=0$。噪声太大，不值得用。</p>
+</div>
+<div class="qa">
+<p class="q">自测 5（★★★）：用几何语言说清容量和率失真的区别。</p>
+<p class="muted">答：容量 = 把噪声球<b>不重叠地打包</b>进输出空间，求<b>最多</b>能塞几个码字（max I，怕重叠/混淆）；率失真 = 用失真球<b>覆盖</b>整个源空间，求<b>最少</b>需几个码字（min I，怕漏）。单球体积分别是 $2^{nH(Y\mid X)}$ 和 $2^{nH(V\mid\hat V)}$，总体积除以单球体积都得 $2^{nI}$。</p>
+</div>
+<div class="qa">
+<p class="q">自测 6（★★★）：Hamming(7,4) 收到后校正子算出 $(s_4s_2s_1)=011$，怎么办？</p>
+<p class="muted">答：$011$ 是二进制的 3 → 第 3 位出错，翻转第 3 位即纠正。校正子非零时它本身就是出错位置编号。</p>
+</div>
+<div class="qa">
+<p class="q">自测 7：为什么率失真可达性必须用"强"典型集？</p>
+<p class="muted">答：失真 $\frac1n\sum d(v_i,\hat v_i)$ 等于"经验分布下对 $d$ 的期望"，只有强典型（经验分布≈真实联合分布）才能保证它 $\approx\mathbb E[d]\le D$；弱典型只管对数概率，控不住失真。</p>
 </div>
 
 <a class="back" href="模块二_信源编码.html">← 模块二：信源编码</a>
